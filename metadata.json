@@ -1,0 +1,8 @@
+{
+  "name": "Ludo King Controller",
+  "description": "Local and cloud room controller and telemetry dashboard for Ludo King.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
