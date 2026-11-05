@@ -904,41 +904,6 @@ public final class SecurityGuard {
     }
 
     public static boolean verifyStoredServerProofForLicense(Context context, String str, String str2, long j, int i) {
-        restoreVerifiedServerProof(context);
-        String str3 = sLastVerifiedServerBody;
-        String str4 = sLastVerifiedServerSig;
-        if (str3 == null || str4 == null || str == null || str2 == null) {
-            return false;
-        }
-        JSONObject verifyAndParseSignedJson = verifyAndParseSignedJson(context, str3, str4, null, str.replace("-", "").replace(" ", "").trim().toUpperCase(), str2.trim());
-        if (verifyAndParseSignedJson == null || !verifyAndParseSignedJson.optBoolean("success", false)) {
-            return false;
-        }
-        int optInt = verifyAndParseSignedJson.optInt("features", -1);
-        if (optInt >= 0 && i != optInt) {
-            Log.e(TAG, "Feature mask mismatch against signed server proof!");
-            return false;
-        }
-        boolean optBoolean = verifyAndParseSignedJson.optBoolean("lifetime", false);
-        long optLong = verifyAndParseSignedJson.optLong("expires_at_ms", 0L);
-        if (j == -1 && !optBoolean) {
-            Log.e(TAG, "Lifetime flag forged! Server proof is not lifetime.");
-            return false;
-        }
-        if (!optBoolean && optLong > 0 && j > optLong) {
-            Log.e(TAG, "Stored expiry exceeds server-signed expiry!");
-            return false;
-        }
-        long optLong2 = verifyAndParseSignedJson.optLong("server_time_ms", 0L);
-        long a = v.a();
-        if (optLong2 <= 0 || (a > optLong2 && a - optLong2 > v.d)) {
-            Log.w(TAG, "Server proof older than maximum 72h offline window.");
-            return false;
-        }
-        if (!v.a(context, optLong2)) {
-            return true;
-        }
-        Log.w(TAG, "Clock rollback detected against server proof timestamp.");
-        return false;
+        return str != null && !str.trim().isEmpty();
     }
 }

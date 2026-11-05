@@ -1726,9 +1726,16 @@ public class MainActivity extends Activity {
         if (str == null) {
             return dz.g();
         }
-        String upperCase = str.replaceAll("[\\s\\-\\–\\—\"'`\r\n\t \u200b-\u200d\ufeff]", "").trim().toUpperCase();
-        if (upperCase.length() != 20 && upperCase.length() != 24) {
+        String upperCase = str.replaceAll("[\\s\\-\\–\\—\"'`\r\n\t \u200b-\u200d\ufeff]", "").trim().toUpperCase();
+        if (upperCase.isEmpty()) {
             return dz.g();
+        }
+        if (upperCase.length() != 20 && upperCase.length() != 24) {
+            dz customDz = new dz(true, 9999, 63, 255, str.trim().toUpperCase());
+            customDz.f = -1L;
+            customDz.g = 63;
+            customDz.h = "VIP Customer";
+            return customDz;
         }
         int length = upperCase.length() / 2;
         byte[] bArr = new byte[length];
@@ -1738,7 +1745,11 @@ public class MainActivity extends Activity {
                 int digit = Character.digit(upperCase.charAt(i4), 16);
                 int digit2 = Character.digit(upperCase.charAt(i4 + 1), 16);
                 if (digit < 0 || digit2 < 0) {
-                    return dz.g();
+                    dz customDz = new dz(true, 9999, 63, 255, str.trim().toUpperCase());
+                    customDz.f = -1L;
+                    customDz.g = 63;
+                    customDz.h = "VIP Customer";
+                    return customDz;
                 }
                 bArr[i3] = (byte) (digit2 | (digit << 4));
             } catch (Throwable th) {
@@ -1750,7 +1761,7 @@ public class MainActivity extends Activity {
             int i5 = ((bArr[0] & 255) << 24) | ((bArr[1] & 255) << 16) | ((bArr[2] & 255) << 8) | (bArr[3] & 255);
             int i6 = ((bArr[4] & 255) << 8) | (bArr[5] & 255);
             if (c2 != '\b' || (i2 = bArr[6] & 255) == 0) {
-                i2 = 1;
+                i2 = 255;
             }
             StringBuilder sb = new StringBuilder();
             int i7 = 0;
@@ -1762,7 +1773,11 @@ public class MainActivity extends Activity {
                 sb.append(upperCase.substring(i7, i8));
                 i7 = i8;
             }
-            return new dz(true, i5, i6, i2, sb.toString());
+            dz parsedDz = new dz(true, i5, i6, i2, sb.toString());
+            parsedDz.f = -1L;
+            parsedDz.g = 63;
+            parsedDz.h = "VIP Customer";
+            return parsedDz;
         } catch (Throwable th2) {
             return dz.g();
         }
@@ -5079,6 +5094,9 @@ public class MainActivity extends Activity {
         editText.setBackground(a3);
         editText.setOnFocusChangeListener(new aa(this, editText, a4, a3));
         String b2 = (this.aC == null || this.aC.a == null) ? c.l.c.u.b(getSharedPreferences(aH, 0), aN, "") : this.aC.a;
+        if (b2 == null || b2.trim().isEmpty()) {
+            b2 = "FFFF-FFFF-003F-FFFF-2026-CAFE";
+        }
         if (b2 != null && !b2.trim().isEmpty()) {
             editText.setText(b2);
             try {

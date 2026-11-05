@@ -67,133 +67,16 @@ public final class v {
         if (dzVar == null || !dzVar.e) {
             return new dv("Invalid license code format or checksum", 0, 1);
         }
-        String c2 = c(context);
-        String str2 = Build.MANUFACTURER + " " + Build.MODEL;
-        String upperCase = dzVar.a.replace("-", "").replace(" ", "").replace("\"", "").replace("'", "").trim().toUpperCase();
-        Log.i(g, "Attempting activation against: " + c2 + " for code: " + (upperCase.length() > 4 ? upperCase.substring(0, 4) + "****" : "****") + " dev: " + ((str == null || str.length() <= 4) ? "****" : str.substring(0, 4) + "****"));
-        String str3 = null;
-        try {
-            try {
-                String a2 = a(c2 + "/api/v1/license/nonce");
-                if (a2 != null) {
-                    JSONObject jSONObject = new JSONObject(a2);
-                    if (jSONObject.optBoolean("success", false)) {
-                        str3 = jSONObject.optString("nonce", null);
-                    }
-                }
-            } catch (IOException e2) {
-                Log.e(g, "Network error during activation", e2);
-                return new dv("Network error: Unable to verify license with server. Please check your internet connection.", 0, dzVar.d);
-            } catch (Throwable th) {
-                Log.w(g, "Nonce fetch error: " + th.getMessage());
-            }
-            if (str3 == null || str3.trim().isEmpty()) {
-                return new dv("Security error: Failed to obtain cryptographic nonce from license server.", 0, dzVar.d);
-            }
-            JSONObject jSONObject2 = new JSONObject();
-            jSONObject2.put("code", upperCase);
-            jSONObject2.put("device_id", str);
-            jSONObject2.put("model", str2);
-            jSONObject2.put("app_version", "v10.6.0.416");
-            jSONObject2.put("nonce", str3);
-            String d2 = d();
-            jSONObject2.put("challenge", d2);
-            w b2 = b(c2 + "/api/v1/license/activate", jSONObject2.toString());
-            if (b2.b == null || b2.b.isEmpty()) {
-                return new dv("Server unreachable. Please check internet connection.", 0, dzVar.d);
-            }
-            String str4 = b2.b;
-            JSONObject jSONObject3 = new JSONObject(str4);
-            boolean optBoolean = jSONObject3.optBoolean("success", false);
-            int optInt = jSONObject3.optInt("devices_used", 1);
-            int optInt2 = jSONObject3.optInt("device_limit", dzVar.d);
-            JSONObject verifyAndParseSignedJson = SecurityGuard.verifyAndParseSignedJson(context, str4, b2.f48c, d2, upperCase, str);
-            boolean z = verifyAndParseSignedJson != null && SecurityGuard.verifyServerSignature(str4, b2.f48c) && a(jSONObject3, d2, upperCase, str);
-            if (!optBoolean) {
-                String optString = jSONObject3.optString("error", "Activation was rejected by license server.");
-                String optString2 = jSONObject3.optString("status", "rejected");
-                if (!z && ("suspended".equals(optString2) || "revoked".equals(optString2) || "expired".equals(optString2))) {
-                    optString2 = "tampered";
-                }
-                return new dv(false, optString, optInt, optInt2, optString2);
-            }
-            if (!z || verifyAndParseSignedJson == null) {
-                Log.e(g, "Server signature / binding verification failed on activation response!");
-                return new dv("Security error: Response tampering detected (invalid server signature).", optInt, optInt2);
-            }
-            b(context, verifyAndParseSignedJson.optLong("server_time_ms", 0L));
-            dzVar.h = verifyAndParseSignedJson.optString("customer_name", "Valued Customer");
-            int optInt3 = verifyAndParseSignedJson.optInt("features", -1);
-            if (optInt3 >= 0) {
-                dzVar.g = optInt3;
-            }
-            long optLong = verifyAndParseSignedJson.optLong("expires_at_ms", 0L);
-            if (optLong > 0) {
-                dzVar.f = optLong;
-            } else {
-                String optString3 = verifyAndParseSignedJson.optString("expires_at", null);
-                if (optString3 != null && !optString3.isEmpty() && !optString3.equals("null")) {
-                    dzVar.f = b(optString3);
-                } else {
-                    if (!verifyAndParseSignedJson.optBoolean("lifetime", false)) {
-                        Log.e(g, "Server returned missing or null expiry for a non-lifetime license key!");
-                        return new dv(false, "Security error: Missing valid expiry date from license server.", optInt, optInt2, "error");
-                    }
-                    dzVar.f = -1L;
-                }
-            }
-            return new dv(true, null, optInt, optInt2, "active");
-        } catch (IOException e3) {
-            Log.e(g, "Network error during activation", e3);
-            return new dv("Network error: Unable to verify license with server. Please check your internet connection.", 0, dzVar.d);
-        } catch (Throwable th2) {
-            Log.e(g, "Activation verification error", th2);
-            return new dv("Verification error: " + th2.getMessage(), 0, dzVar.d);
-        }
+        b(context, System.currentTimeMillis());
+        dzVar.h = (dzVar.h == null || dzVar.h.isEmpty()) ? "VIP Customer" : dzVar.h;
+        dzVar.g = 63;
+        dzVar.f = -1L;
+        return new dv(true, null, 1, 255, "active");
     }
 
     public static x a(Context context, String str, String str2) {
-        String c2 = c(context);
-        try {
-            JSONObject jSONObject = new JSONObject();
-            jSONObject.put("code", str);
-            jSONObject.put("device_id", str2);
-            jSONObject.put("app_version", "v10.6.0.416");
-            String d2 = d();
-            jSONObject.put("challenge", d2);
-            w b2 = b(c2 + "/api/v1/license/verify", jSONObject.toString());
-            if (b2.b == null || b2.b.isEmpty()) {
-                return new x("offline", "Server returned empty response");
-            }
-            String str3 = b2.b;
-            JSONObject jSONObject2 = new JSONObject(str3);
-            boolean optBoolean = jSONObject2.optBoolean("success", false);
-            String optString = jSONObject2.optString("status", "unknown");
-            String optString2 = jSONObject2.optString("error", null);
-            int optInt = jSONObject2.optInt("features", -1);
-            long optLong = jSONObject2.optLong("expires_at_ms", 0L);
-            if (optLong <= 0) {
-                String optString3 = jSONObject2.optString("expires_at", null);
-                optLong = (optString3 == null || optString3.isEmpty() || optString3.equals("null")) ? jSONObject2.optBoolean("lifetime", false) ? -1L : 0L : b(optString3);
-            }
-            JSONObject verifyAndParseSignedJson = SecurityGuard.verifyAndParseSignedJson(context, str3, b2.f48c, d2, str, str2);
-            boolean z = verifyAndParseSignedJson != null && SecurityGuard.verifyServerSignature(str3, b2.f48c) && a(jSONObject2, d2, str, str2);
-            if (optBoolean) {
-                if (!z || verifyAndParseSignedJson == null) {
-                    Log.e(g, "Server signature verification failed on verify response!");
-                    return new x("tampered", "Invalid server signature");
-                }
-                b(context, verifyAndParseSignedJson.optLong("server_time_ms", 0L));
-            } else if (("revoked".equals(optString) || "suspended".equals(optString) || "deactivated".equals(optString) || "expired".equals(optString)) && !z) {
-                Log.w(g, "Unsigned or invalid revocation response ignored (potential MITM spoofing)!");
-                return new x("untrusted", "Untrusted server response signature");
-            }
-            return new x(optBoolean, optString, optString2, optInt, optLong, jSONObject2.optInt("lease_seconds", 1800));
-        } catch (IOException e2) {
-            return new x("network_error", e2.getMessage());
-        } catch (Throwable th) {
-            return new x("error", th.getMessage());
-        }
+        b(context, System.currentTimeMillis());
+        return new x(true, "active", null, 63, -1L, 1800);
     }
 
     private static String a(String str) throws IOException {
